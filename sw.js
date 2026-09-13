@@ -1,5 +1,5 @@
 /* NEXT — offline shell. Bump CACHE when you change index.html. */
-const CACHE = 'next-v1';
+const CACHE = 'next-v3';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
