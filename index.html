@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1621">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<title>NEXT</title>
+<style>
+:root{
+  --ink:#0E1621; --ink2:#16212E; --ink3:#1E2C3C;
+  --bone:#EAE6DD; --slate:#5C6B7A; --slate2:#8494A3;
+  --amber:#F5A524; --amber-d:#C7821A;
+  --done:#3FA66E; --kid:#7C6BF5; --warn:#E0604A;
+  --rule:rgba(234,230,221,.10);
+  --sp:16px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--ink);color:var(--bone)}
+body{
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px;line-height:1.45;
+  font-variant-numeric:tabular-nums;
+  overscroll-behavior-y:contain;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+#app{padding-top:var(--safe-t);padding-bottom:calc(68px + var(--safe-b));max-width:640px;margin:0 auto;min-height:100vh}
+.screen{display:none;animation:in .18s ease-out}
+.screen.on{display:block}
+@keyframes in{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- roster header ---------- */
+.hdr{display:flex;align-items:baseline;gap:10px;padding:14px var(--sp) 10px;border-bottom:1px solid var(--rule)}
+.hdr .d{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--slate2)}
+.hdr .wk{margin-left:auto;font-size:12px;font-weight:700;color:var(--ink);background:var(--slate2);padding:2px 8px;border-radius:3px}
+.hdr .wk.kid{background:var(--kid);color:#fff}
+
+/* ---------- the one bold thing ---------- */
+.next{background:var(--amber);color:#14202B;padding:20px var(--sp) 18px;position:relative}
+.next.rest{background:var(--ink2);color:var(--bone);border-bottom:1px solid var(--rule)}
+.next .lbl{font-size:12px;font-weight:700;letter-spacing:.08em;opacity:.62;margin-bottom:2px}
+.next h1{margin:0;font-size:34px;line-height:1.03;font-weight:800;letter-spacing:-.03em}
+.next .sub{margin-top:7px;font-size:14px;font-weight:600;opacity:.72}
+.next .meta{margin-top:3px;font-size:13px;opacity:.58}
+.next .acts{display:flex;gap:8px;margin-top:16px}
+.next button{flex:1;padding:14px 8px;border-radius:5px;font-weight:800;font-size:15px;
+  background:#14202B;color:var(--amber);transition:transform .1s}
+.next button:active{transform:scale(.97)}
+.next button.ghost{flex:0 0 44%;background:rgba(20,32,43,.13);color:#14202B;font-weight:700;font-size:14px}
+.next.rest button{background:var(--ink3);color:var(--bone)}
+.next.rest button.ghost{background:rgba(234,230,221,.07);color:var(--slate2)}
+
+/* ---------- motivation ---------- */
+.mot{padding:14px var(--sp);border-bottom:1px solid var(--rule);display:flex;gap:12px;align-items:flex-start}
+.mot p{margin:0;font-size:15px;line-height:1.45;color:var(--bone)}
+.mot .tick{flex:0 0 3px;align-self:stretch;background:var(--amber);border-radius:2px;min-height:34px}
+.mot button{margin-left:auto;flex:0 0 auto;color:var(--slate);font-size:12px;padding:4px;align-self:center}
+
+/* ---------- summary strips ---------- */
+.strip{display:block;width:100%;text-align:left;padding:15px var(--sp);border-bottom:1px solid var(--rule)}
+.strip .row{display:flex;align-items:baseline;gap:10px}
+.strip .nm{font-size:15px;font-weight:700}
+.strip .ct{margin-left:auto;font-size:13px;color:var(--slate2);font-weight:600}
+.strip .bar{display:flex;gap:3px;margin-top:9px}
+.strip .bar i{flex:1;height:5px;border-radius:2px;background:var(--ink3)}
+.strip .bar i.f{background:var(--amber)}
+.strip .bar i.p{background:var(--amber-d);opacity:.55}
+.strip .note{font-size:12.5px;color:var(--slate);margin-top:6px}
+
+/* ---------- section headings ---------- */
+.sec{padding:22px var(--sp) 8px;font-size:13px;font-weight:700;color:var(--slate2);letter-spacing:.01em}
+.sec.first{padding-top:16px}
+
+/* ---------- item rows (meals / exercises / checklists) ---------- */
+.item{display:flex;gap:13px;align-items:center;padding:11px var(--sp);border-bottom:1px solid var(--rule);width:100%;text-align:left}
+.item .art{flex:0 0 52px;height:52px;background:var(--ink2);border-radius:5px;display:grid;place-items:center;overflow:hidden}
+.item .art svg{width:46px;height:46px;display:block}
+.item .bd{flex:1;min-width:0}
+.item .t{font-size:15px;font-weight:650;line-height:1.25}
+.item .s{font-size:13px;color:var(--slate2);margin-top:2px;line-height:1.3}
+.item .tm{font-size:12.5px;color:var(--amber);font-weight:700;margin-top:3px}
+.item .box{flex:0 0 27px;height:27px;border:2px solid var(--slate);border-radius:5px;display:grid;place-items:center;transition:all .12s}
+.item.done{opacity:.42}
+.item.done .box{background:var(--done);border-color:var(--done)}
+.item.done .t{text-decoration:line-through;text-decoration-thickness:1.5px}
+.item.part .box{background:var(--amber-d);border-color:var(--amber-d)}
+.item .box svg{width:15px;height:15px;stroke:#0E1621;stroke-width:3.4;fill:none}
+.item.now{background:rgba(245,165,36,.07);box-shadow:inset 3px 0 0 var(--amber)}
+
+/* ---------- exercise detail ---------- */
+.ex{border-bottom:1px solid var(--rule);padding:13px var(--sp)}
+.ex .hd{display:flex;gap:13px;align-items:center}
+.ex .art{flex:0 0 68px;height:68px;background:var(--ink2);border-radius:5px;display:grid;place-items:center}
+.ex .art svg{width:62px;height:62px}
+.ex .nm{font-size:15.5px;font-weight:700}
+.ex .rx{font-size:14px;color:var(--amber);font-weight:700;margin-top:2px}
+.ex .cue{font-size:13px;color:var(--slate2);margin-top:5px;line-height:1.4}
+
+/* ---------- blocks ---------- */
+.blk{margin:0 var(--sp) 14px;background:var(--ink2);border-radius:6px;padding:15px;border-left:3px solid var(--slate)}
+.blk.amber{border-left-color:var(--amber)}
+.blk.kid{border-left-color:var(--kid)}
+.blk.warn{border-left-color:var(--warn)}
+.blk h3{margin:0 0 6px;font-size:14.5px;font-weight:750}
+.blk p{margin:0;font-size:13.5px;color:var(--slate2);line-height:1.5}
+
+/* ---------- roster grid ---------- */
+.ros{padding:0 var(--sp) 8px}
+.ros .r{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule)}
+.ros .r.today{box-shadow:inset 3px 0 0 var(--amber);padding-left:10px;margin-left:-10px}
+.ros .dy{flex:0 0 42px;font-size:13px;font-weight:750;color:var(--slate2)}
+.ros .r.today .dy{color:var(--amber)}
+.ros .tr{flex:1;font-size:13.5px;font-weight:600}
+.ros .tr.off{color:var(--slate);font-weight:500}
+.ros .kd{flex:0 0 auto;font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px;background:rgba(124,107,245,.17);color:#A99BFF}
+.ros .kd.solo{background:transparent;color:var(--slate);opacity:.45}
+
+/* ---------- inputs ---------- */
+.fld{padding:12px var(--sp);border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:12px}
+.fld label{flex:1;font-size:15px;font-weight:600}
+.fld .u{font-size:13px;color:var(--slate);font-weight:600}
+.fld input{width:106px;background:var(--ink2);border:1px solid var(--rule);border-radius:5px;
+  color:var(--bone);padding:11px 12px;font-size:17px;font-weight:700;text-align:right}
+.fld input:focus{outline:2px solid var(--amber);outline-offset:1px}
+.btn{display:block;width:calc(100% - 32px);margin:18px var(--sp);padding:16px;border-radius:6px;
+  background:var(--amber);color:#14202B;font-weight:800;font-size:16px;text-align:center}
+.btn:active{transform:scale(.985)}
+.btn.sec2{background:var(--ink2);color:var(--bone);font-weight:700}
+.btn:disabled{opacity:.35}
+
+/* ---------- log / history ---------- */
+.hist{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:4px var(--sp) 14px}
+.hist div{aspect-ratio:1;border-radius:3px;background:var(--ink2);display:grid;place-items:center;font-size:10px;color:var(--slate)}
+.hist div.f{background:var(--done);color:#08120B;font-weight:800}
+.hist div.p{background:var(--amber-d);color:#14202B;font-weight:800}
+.hist div.m{background:var(--ink3)}
+.hist div.fu{background:transparent;border:1px dashed var(--rule)}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:8px var(--sp) 0;font-size:10.5px;color:var(--slate);text-align:center;font-weight:700}
+.stats{display:flex;gap:10px;padding:6px var(--sp) 4px}
+.stat{flex:1;background:var(--ink2);border-radius:6px;padding:13px 12px}
+.stat .v{font-size:27px;font-weight:850;letter-spacing:-.03em;line-height:1}
+.stat .k{font-size:11.5px;color:var(--slate2);margin-top:5px;font-weight:600}
+.mrow{display:flex;gap:12px;align-items:baseline;padding:12px var(--sp);border-bottom:1px solid var(--rule)}
+.mrow .dt{flex:0 0 74px;font-size:12.5px;color:var(--slate2);font-weight:600}
+.mrow .v1{font-size:16px;font-weight:750}
+.mrow .dl{margin-left:auto;font-size:12.5px;font-weight:700}
+.dl.dn{color:var(--done)} .dl.up{color:var(--warn)} .dl.fl{color:var(--slate)}
+
+/* ---------- timer ---------- */
+.tmr{position:fixed;inset:0;background:var(--ink);z-index:60;display:none;flex-direction:column;
+  padding:var(--safe-t) 0 var(--safe-b)}
+.tmr.on{display:flex}
+.tmr .top{padding:16px var(--sp);display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--rule)}
+.tmr .top .nm{font-size:15px;font-weight:750}
+.tmr .top button{margin-left:auto;color:var(--slate2);font-size:14px;font-weight:650}
+.tmr .mid{flex:1;display:grid;place-items:center;text-align:center;padding:16px}
+.tmr .cd{font-size:80px;font-weight:850;letter-spacing:-.05em;line-height:1}
+.tmr .st{font-size:15px;color:var(--slate2);margin-top:10px;font-weight:600}
+.tmr .bot{padding:16px var(--sp) 24px;display:flex;gap:10px}
+.tmr .bot button{flex:1;padding:17px;border-radius:6px;background:var(--amber);color:#14202B;font-weight:800;font-size:16px}
+.tmr .bot button.g{background:var(--ink2);color:var(--bone)}
+
+/* ---------- nav ---------- */
+nav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,22,33,.96);backdrop-filter:blur(12px);
+  border-top:1px solid var(--rule);display:flex;padding-bottom:var(--safe-b);z-index:50;max-width:640px;margin:0 auto}
+nav button{flex:1;padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--slate);position:relative}
+nav button.on{color:var(--amber)}
+nav button svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+nav button span{font-size:10.5px;font-weight:700;letter-spacing:.01em}
+nav button .dot{position:absolute;top:7px;right:calc(50% - 15px);width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+/* ---------- misc ---------- */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + var(--safe-b));
+  background:var(--bone);color:var(--ink);padding:11px 18px;border-radius:6px;font-size:14px;font-weight:700;
+  z-index:70;opacity:0;pointer-events:none;transition:opacity .2s;max-width:88%;text-align:center}
+.toast.on{opacity:1}
+.empty{padding:36px var(--sp);text-align:center;color:var(--slate);font-size:14.5px;line-height:1.55}
+.foot{padding:22px var(--sp) 30px;color:var(--slate);font-size:12.5px;line-height:1.55}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;background:var(--ink3);color:var(--slate2)}
+.pill.kid{background:rgba(124,107,245,.17);color:#A99BFF}
+.pill.amber{background:rgba(245,165,36,.15);color:var(--amber)}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- TODAY -->
+  <section class="screen on" id="sc-today">
+    <div class="hdr"><span class="d" id="hdrDate"></span><span class="wk" id="hdrWk"></span></div>
+    <div class="next" id="nextCard"></div>
+    <div class="mot"><i class="tick"></i><p id="motTxt"></p><button id="motNew" aria-label="Another line">↻</button></div>
+    <button class="strip" data-go="meals">
+      <div class="row"><span class="nm">Meals</span><span class="ct" id="mStat"></span></div>
+      <div class="bar" id="mBar"></div>
+      <div class="note" id="mNote"></div>
+    </button>
+    <button class="strip" data-go="train">
+      <div class="row"><span class="nm">Training</span><span class="ct" id="tStat"></span></div>
+      <div class="bar" id="tBar"></div>
+      <div class="note" id="tNote"></div>
+    </button>
+    <div class="strip" style="border-bottom:1px solid var(--rule)">
+      <div class="row"><span class="nm">Water</span><span class="ct" id="wStat"></span></div>
+      <div class="bar" id="wBar"></div>
+      <div style="display:flex;gap:8px;margin-top:11px">
+        <button class="btn sec2" style="margin:0;flex:1;padding:11px;font-size:14px" id="wMinus">Remove a glass</button>
+        <button class="btn" style="margin:0;flex:1;padding:11px;font-size:14px" id="wPlus">Add a glass</button>
+      </div>
+    </div>
+    <div class="sec">This fortnight</div>
+    <div class="ros" id="rosterBox"></div>
+    <div class="foot" id="todayFoot"></div>
+  </section>
+
+  <!-- MEALS -->
+  <section class="screen" id="sc-meals">
+    <div class="hdr"><span class="d">Meals</span><span class="wk" id="mealsWk"></span></div>
+    <div id="mealList"></div>
+    <div class="sec">Reminders</div>
+    <div class="blk amber" id="notifBlk">
+      <h3>Alarms are off</h3>
+      <p>Turn on reminders and the app will alert you at each meal time while it is running in the background.</p>
+      <button class="btn" style="width:100%;margin:12px 0 0;padding:13px;font-size:14px" id="notifBtn">Turn on reminders</button>
+    </div>
+    <div class="blk">
+      <h3>Phone alarms are the reliable backup</h3>
+      <p>Browser reminders stop if Android kills the app in the background. Export the times to your calendar so they fire no matter what.</p>
+      <button class="btn sec2" style="width:100%;margin:12px 0 0;padding:13px;font-size:14px" id="icsBtn">Download calendar file</button>
+    </div>
+    <div class="foot">Targets: about 2,100 kcal and 150-170 g protein a day. Eat the protein first at every meal. Psyllium always with a full glass of water, never dry, and 2 hours clear of any medication.</div>
+  </section>
+
+  <!-- TRAIN -->
+  <section class="screen" id="sc-train">
+    <div class="hdr"><span class="d" id="trainDate"></span><span class="wk" id="trainWk"></span></div>
+    <div id="trainBody"></div>
+  </section>
+
+  <!-- LOG -->
+  <section class="screen" id="sc-log">
+    <div class="hdr"><span class="d">Log</span><span class="wk" id="logWk"></span></div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="stStreak">0</div><div class="k">Day streak</div></div>
+      <div class="stat"><div class="v" id="stSess">0</div><div class="k">Sessions done</div></div>
+      <div class="stat"><div class="v" id="stAdh">0%</div><div class="k">Meals hit, 14d</div></div>
+    </div>
+    <div class="sec">Last 8 weeks</div>
+    <div class="dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+    <div class="hist" id="histGrid"></div>
+    <div class="foot" style="padding-top:0">Green is a full day. Amber is a partial day, which still counts. Grey is a miss.</div>
+    <div class="sec">Weight and waist</div>
+    <div id="measList"></div>
+    <div class="sec">Videos</div>
+    <div id="vidList"></div>
+    <button class="btn sec2" id="exportBtn">Export everything as a file</button>
+    <div class="foot">Waist matters more than weight for what you are after. Expect it to fall faster than the scale in months 2 to 4.</div>
+  </section>
+
+  <!-- SUNDAY -->
+  <section class="screen" id="sc-sun">
+    <div class="hdr"><span class="d">Sunday</span><span class="wk" id="sunWk"></span></div>
+    <div id="sunBody"></div>
+  </section>
+</div>
+
+<nav>
+  <button data-go="today" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Today</span></button>
+  <button data-go="meals"><svg viewBox="0 0 24 24"><path d="M4 3v8a3 3 0 0 0 6 0V3"/><path d="M7 11v10"/><path d="M18 3c-2 2-2 5-2 7h4V3z"/><path d="M18 10v11"/></svg><span>Meals</span><i class="dot" id="dotM" hidden></i></button>
+  <button data-go="train"><svg viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg><span>Train</span><i class="dot" id="dotT" hidden></i></button>
+  <button data-go="log"><svg viewBox="0 0 24 24"><path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/></svg><span>Log</span></button>
+  <button data-go="sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><span>Sunday</span><i class="dot" id="dotS" hidden></i></button>
+</nav>
+
+<div class="tmr" id="tmr">
+  <div class="top"><span class="nm" id="tmrNm"></span><button id="tmrX">Close</button></div>
+  <div class="mid"><div><div class="cd" id="tmrCd">30:00</div><div class="st" id="tmrSt"></div></div></div>
+  <div class="bot"><button class="g" id="tmrReset">Reset</button><button id="tmrGo">Start</button></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ============ illustration library (inline SVG, offline, no deps) ============ */
+const SV=(b)=>'<svg viewBox="0 0 64 64" aria-hidden="true">'+b+'</svg>';
+const F='stroke="#EAE6DD" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"';
+const A='stroke="#F5A524" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"';
+const G='stroke="#5C6B7A" stroke-width="2.2" stroke-linecap="round" fill="none"';
+const HEAD=(x,y)=>`<circle cx="${x}" cy="${y}" r="4.4" fill="#EAE6DD"/>`;
+const KB=(x,y)=>`<path d="M${x-3.4} ${y-3.2}a3.4 3.4 0 0 1 6.8 0" ${A}/><ellipse cx="${x}" cy="${y+2.6}" rx="5.4" ry="4.8" fill="#F5A524"/>`;
+const BAND=(x1,y1,x2,y2,sag=3)=>`<path d="M${x1} ${y1}Q${(x1+x2)/2} ${(y1+y2)/2+sag} ${x2} ${y2}" stroke="#F5A524" stroke-width="2.4" fill="none" stroke-dasharray="4 3" stroke-linecap="round"/>`;
+const BOX=(x,y,w,h)=>`<path d="M${x} ${y}h${w}v${h}" ${G}/><path d="M${x} ${y}v${h}" ${G}/>`;
+const FLOOR=(y=56)=>`<path d="M6 ${y}h52" ${G}/>`;
+
+const ART={
+/* ---- meals ---- */
+psyllium:SV(`<path d="M23 18h18l-2.4 30a3 3 0 0 1-3 2.7h-7.2a3 3 0 0 1-3-2.7z" ${F}/><path d="M24.2 29h15.6" ${A}/><path d="M34 22l4-12" ${G}/><path d="M36 10h4" ${G}/><circle cx="29" cy="37" r="1.6" fill="#F5A524"/><circle cx="35" cy="42" r="1.6" fill="#F5A524"/><circle cx="31" cy="46" r="1.4" fill="#F5A524"/>`),
+oats:SV(`<path d="M10 32h44c0 11-9 19-22 19S10 43 10 32z" ${F}/><path d="M13 32h38" ${A}/><circle cx="23" cy="39" r="2" fill="#F5A524"/><circle cx="32" cy="43" r="2" fill="#F5A524"/><circle cx="41" cy="38" r="2" fill="#F5A524"/><ellipse cx="44" cy="17" rx="5" ry="3.4" transform="rotate(-28 44 17)" ${G}/><path d="M40 20l-8 9" ${G}/>`),
+eggs:SV(`<ellipse cx="22" cy="36" rx="11" ry="14" ${F}/><ellipse cx="44" cy="40" rx="9" ry="11.5" ${F}/><ellipse cx="44" cy="40" rx="4.2" ry="4.8" fill="#F5A524"/>`),
+lunch:SV(`<circle cx="32" cy="34" r="21" ${F}/><path d="M32 13a21 21 0 0 1 0 42" ${G}/><rect x="16" y="27" width="14" height="10" rx="2.5" fill="#F5A524"/><circle cx="41" cy="29" r="4" ${A}/><circle cx="44" cy="40" r="4.5" ${A}/><circle cx="36" cy="42" r="3.4" ${A}/>`),
+nuts:SV(`<ellipse cx="24" cy="30" rx="6.5" ry="8" transform="rotate(-18 24 30)" fill="#F5A524"/><ellipse cx="38" cy="27" rx="5.5" ry="7" transform="rotate(22 38 27)" ${F}/><ellipse cx="31" cy="42" rx="7" ry="6" transform="rotate(8 31 42)" ${F}/><ellipse cx="43" cy="40" rx="5" ry="6.2" transform="rotate(-14 43 40)" fill="#F5A524"/>`),
+dinner:SV(`<circle cx="32" cy="34" r="21" ${F}/><path d="M18 30c3-6 11-7 15-3s2 12-4 13-14-4-11-10z" fill="#F5A524"/><path d="M42 26v16M38 26v4a4 4 0 0 0 8 0v-4" ${G}/><circle cx="27" cy="45" r="3.2" ${A}/><circle cx="36" cy="45" r="3.2" ${A}/>`),
+water:SV(`<path d="M24 14h16l-2 34a3 3 0 0 1-3 2.8h-6a3 3 0 0 1-3-2.8z" ${F}/><path d="M25 30h14" ${A}/><path d="M26 40h12" ${A}/>`),
+
+/* ---- routine A ---- */
+catcow:SV(`${FLOOR()}<path d="M24 33q11-7 22 0" ${F}/><path d="M24 33l-3 12-1 11M46 33l3 12 1 11" ${F}/><path d="M27 34l-2 11 -2 11M43 34l2 11 2 11" ${F}/><path d="M24 33l-6 5" ${F}/>${HEAD(14,41)}`),
+kbdeadlift:SV(`${FLOOR()}${HEAD(30,15)}<path d="M31 20v14" ${F}/><path d="M31 34l-3 12-2 10M31 34l4 12 2 10" ${F}/><path d="M31 22l-6 14M31 22l6 14" ${F}/>${KB(31,40)}`),
+deadbug:SV(`<path d="M6 54h52" ${G}/>${HEAD(14,47)}<path d="M19 48h17" ${F}/><path d="M22 48V32" ${F}/><path d="M25 49l14-3 10 5" ${F}/><path d="M36 48l7-13 8 3" ${F}/><path d="M36 49l11 4" ${F}/>`),
+pallof:SV(`${FLOOR()}${HEAD(26,16)}<path d="M26 21v17" ${F}/><path d="M26 38l-4 11-2 7M26 38l4 11 3 7" ${F}/><path d="M26 24h14" ${F}/>${BAND(40,24,56,26)}<path d="M56 14v28" ${G}/>`),
+suitcase:SV(`${FLOOR()}${HEAD(31,14)}<path d="M31 19v19" ${F}/><path d="M31 38l-4 10-1 9M31 38l5 10 1 9" ${F}/><path d="M31 23l-8 2v11" ${F}/><path d="M31 23l8 3-2 11" ${F}/>${KB(23,40)}`),
+
+/* ---- routine B ---- */
+bandpass:SV(`${HEAD(32,18)}<path d="M32 23v17" ${F}/><path d="M32 40l-4 10-1 7M32 40l4 10 1 7" ${F}/><path d="M32 25l-13-7M32 25l13-7" ${F}/>${BAND(19,18,45,18,4)}`),
+inclinepush:SV(`<path d="M6 30h26v22" ${G}/>${HEAD(36,26)}<path d="M40 28l14 12" ${F}/><path d="M54 40l-4 14" ${F}/><path d="M36 30l-4 4M42 31l-8 3" ${F}/>`),
+bandrow:SV(`${HEAD(24,16)}<path d="M24 21v17" ${F}/><path d="M24 38l-4 11-2 7M24 38l4 11 2 7" ${F}/><path d="M24 24h9l-4 6" ${F}/>${BAND(33,24,54,28)}<path d="M54 12v34" ${G}/>`),
+pushdown:SV(`${HEAD(26,16)}<path d="M26 21v18" ${F}/><path d="M26 39l-4 11-1 7M26 39l4 11 1 7" ${F}/><path d="M26 24l7 4 1 9" ${F}/>${BAND(34,20,34,37)}<path d="M20 12h28" ${G}/>`),
+ohext:SV(`${HEAD(30,20)}<path d="M30 25v15" ${F}/><path d="M30 40l-4 10-1 7M30 40l4 10 1 7" ${F}/><path d="M30 27l6-11 4 7" ${F}/>${BAND(40,23,36,44)}`),
+facepull:SV(`${HEAD(24,18)}<path d="M24 23v16" ${F}/><path d="M24 39l-4 10-2 8M24 39l4 10 2 8" ${F}/><path d="M24 26l-6-6M24 26l8-6" ${F}/>${BAND(18,20,52,22)}${BAND(32,20,52,22)}<path d="M52 10v28" ${G}/>`),
+
+/* ---- weights ---- */
+goblet:SV(`${FLOOR()}${BOX(36,40,20,16)}${HEAD(23,19)}<path d="M23 24l5 14" ${F}/><path d="M28 38h13v18M28 39l9 3 1 15" ${F}/><path d="M23 26l6 4" ${F}/>${KB(32,28)}`),
+kbpress:SV(`${FLOOR()}${HEAD(27,21)}<path d="M27 26v16" ${F}/><path d="M27 42l-4 8-1 7M27 42l5 8 1 7" ${F}/><path d="M27 28l9-6 5-8" ${F}/><path d="M27 28l-6 11" ${F}/>${KB(43,9)}`),
+onearmrow:SV(`<path d="M12 43h24" ${G}/><path d="M16 43v13M32 43v13" ${G}/>${HEAD(21,29)}<path d="M27 32l19 4" ${F}/><path d="M27 32l-1 9" ${F}/><path d="M33 33l3 9" ${F}/><path d="M46 36l2 11 1 10M46 36l6 11 1 10" ${F}/>${KB(37,45)}`),
+gobletmarch:SV(`${FLOOR()}${HEAD(29,13)}<path d="M29 18v17" ${F}/><path d="M29 35l-2 11v11" ${F}/><path d="M29 35l11 4-2 10" ${F}/><path d="M29 20l6 4" ${F}/>${KB(38,24)}`),
+curl:SV(`${FLOOR()}${HEAD(32,13)}<path d="M32 18v19" ${F}/><path d="M32 37l-4 11-1 8M32 37l4 11 1 8" ${F}/><path d="M32 22l-7 9 6 3M32 22l7 9-6 3" ${F}/>${BAND(30,35,28,55,-4)}${BAND(34,35,36,55,4)}`),
+pullapart:SV(`${HEAD(32,14)}<path d="M32 19v19" ${F}/><path d="M32 38l-4 11-1 8M32 38l4 11 1 8" ${F}/><path d="M32 23l-15-1M32 23l15-1" ${F}/>${BAND(17,26,47,26,5)}`),
+kbswing:SV(`${FLOOR()}${HEAD(26,18)}<path d="M27 23q4 7 2 14" ${F}/><path d="M29 37l-5 11-2 8M29 37l6 10 2 9" ${F}/><path d="M27 25l12 6" ${F}/>${KB(42,33)}<path d="M48 40q4-8 0-16" ${G}/>`),
+stepup:SV(`<path d="M34 44h22v12H34z" ${G}/>${HEAD(26,14)}<path d="M26 19v16" ${F}/><path d="M26 35l-2 12-1 9M26 35l10 6v4" ${F}/><path d="M26 22l-5 11M26 22l6 10" ${F}/>`),
+floorpress:SV(`<path d="M6 55h52" ${G}/>${HEAD(13,47)}<path d="M18 48h16" ${F}/><path d="M34 48l8-9 5 13" ${F}/><path d="M34 50l12 2" ${F}/><path d="M24 47V33" ${F}/>${KB(24,28)}`),
+latraise:SV(`${HEAD(32,14)}<path d="M32 19v19" ${F}/><path d="M32 38l-4 11-1 8M32 38l4 11 1 8" ${F}/><path d="M32 23l-13-3M32 23l13-3" ${F}/>${BAND(19,21,26,56,-4)}${BAND(45,21,38,56,4)}`),
+farmer:SV(`${FLOOR()}${HEAD(32,14)}<path d="M32 19v18" ${F}/><path d="M32 37l-3 11-1 8M32 37l3 11 1 8" ${F}/><path d="M32 22h-9v13M32 22h9v13" ${F}/>${KB(23,39)}${KB(41,39)}`),
+
+/* ---- cardio ---- */
+bike:SV(`<circle cx="16" cy="44" r="9" ${G}/><circle cx="46" cy="44" r="9" ${G}/><path d="M16 44l10-16h12l8 16M26 28h16" ${A}/>${HEAD(34,16)}<path d="M34 21l4 9" ${F}/>`),
+walk:SV(`<path d="M8 56h48" ${G}/><path d="M10 50l18-12h28" ${G}/>${HEAD(28,16)}<path d="M28 21v15" ${F}/><path d="M28 36l-6 12-3 6M28 36l7 10 1 8" ${F}/><path d="M28 24l-7 8M28 24l8 6" ${F}/>`),
+ellip:SV(`<path d="M12 50L44 42" ${G}/><path d="M46 16v28" ${G}/>${HEAD(26,17)}<path d="M26 22v15" ${F}/><path d="M26 37l-8 12M26 37l9 9" ${F}/><path d="M26 24l14-4M26 25l14 7" ${F}/>${BAND(40,18,40,34,3)}`),
+row:SV(`<path d="M8 55h50" ${G}/><path d="M12 40v15" ${G}/><path d="M32 49h12v3H32z" ${G}/>${HEAD(37,30)}<path d="M37 35l3 13" ${F}/><path d="M40 48l-18-4-7 3" ${F}/><path d="M37 36l-11 5" ${F}/>${BAND(26,41,13,38,3)}`),
+
+/* ---- sunday ---- */
+prep:SV(`<rect x="10" y="18" width="44" height="34" rx="4" ${F}/><path d="M10 28h44" ${F}/><path d="M18 14v6M32 12v8M46 14v6" ${G}/><path d="M18 38l5 5 10-11" ${A}/>`),
+tape:SV(`<circle cx="32" cy="34" r="18" ${F}/><circle cx="32" cy="34" r="6" ${A}/><path d="M14 34h-6M56 34h-6M32 16v-6M32 58v-6" ${G}/>`),
+video:SV(`<rect x="8" y="20" width="34" height="26" rx="4" ${F}/><path d="M42 30l14-7v20l-14-7z" ${A}/><circle cx="17" cy="27" r="2" fill="#F5A524"/>`),
+};
+const TICK='<svg viewBox="0 0 24 24"><path d="M4 12.5l5.5 5.5L20 7"/></svg>';
+
+/* ============================ PROGRAMME DATA ============================ */
+const MEALS=[
+ {id:'psy1',t:'05:45',n:'Psyllium and water',s:'1 tsp in 300 ml water, drink before it gels. Chase with a full glass.',a:'psyllium'},
+ {id:'brk', t:'06:30',n:'Breakfast',s:'60 g rolled oats, 200 ml milk, 1 tbsp seeds, 15 g nuts, cinnamon. Or 3 boiled eggs and a slice of rye.',a:'oats'},
+ {id:'h2o', t:'10:00',n:'Water check',s:'You should be 3 glasses in by now. Top up.',a:'water'},
+ {id:'lun', t:'12:30',n:'Lunch',s:'200 g prepped meat, big salad or a bag of microwave veg, 1 tbsp olive oil.',a:'lunch'},
+ {id:'snk', t:'15:30',n:'Afternoon protein',s:'2 boiled eggs, or your weighed 30 g nut bag, or 50 g biltong.',a:'nuts'},
+ {id:'psy2',t:'18:00',n:'Psyllium before dinner',s:'2 tsp in 350 ml water, 30 min before you eat. This is the one that does the work.',a:'psyllium'},
+ {id:'din', t:'18:30',n:'Dinner',s:'250 g meat or fish, two handfuls of veg, spice blend. Training day: add 120 g cooked rice or a potato.',a:'dinner'}
+];
+
+const RA={key:'A',name:'Routine A — hinge and core',ex:[
+ {n:'Cat-cow and standing hip circles',r:'60 seconds',c:'Wake the spine up. Slow, no forcing.',a:'catcow'},
+ {n:'Kettlebell deadlift',r:'3 × 10',c:'Kettlebell between your feet. Push hips back, chest proud, flat back. Squeeze glutes at the top.',a:'kbdeadlift'},
+ {n:'Dead bug',r:'3 × 8 each side',c:'Lower back stays pressed to the floor the whole time. If it arches, shorten the range.',a:'deadbug'},
+ {n:'Band Pallof press',r:'2 × 10 each side',c:'Band anchored at chest height beside you. Press straight out and refuse to rotate.',a:'pallof'},
+ {n:'Suitcase march',r:'2 × 30 s each side',c:'One kettlebell, march on the spot, stay dead upright. Do not lean away from it.',a:'suitcase'}
+]};
+const RB={key:'B',name:'Routine B — upper and arms',ex:[
+ {n:'Band pass-throughs and arm circles',r:'60 seconds',c:'Wide grip. This is the fix for the rounded shoulders.',a:'bandpass'},
+ {n:'Incline push-up on the kitchen counter',r:'3 × 8–12',c:'Body in one line, hands just wider than the chest. Lower the surface as you get stronger.',a:'inclinepush'},
+ {n:'Band row',r:'3 × 12',c:'Band round a door anchor. Elbows drive to the ribs, squeeze the shoulder blades.',a:'bandrow'},
+ {n:'Band triceps pushdown',r:'3 × 15',c:'Elbows pinned to your sides. Only the forearm moves.',a:'pushdown'},
+ {n:'Overhead band triceps extension',r:'2 × 12',c:'Elbows point forward and stay there. Slow on the way down.',a:'ohext'},
+ {n:'Band face pull',r:'2 × 15',c:'Pull to your forehead, thumbs back. Best single fix for desk posture.',a:'facepull'}
+]};
+
+const S1={key:'S1',name:'Session 1 — push',ex:[
+ {n:'Goblet squat to a box',r:'3 × 8',c:'Kettlebell at your chest. Sit back to the box, tap, stand. Chair works fine.',a:'goblet'},
+ {n:'Incline push-up',r:'3 × 8–12',c:'Counter height. Once you get 3 × 12 clean, drop to a lower surface.',a:'inclinepush'},
+ {n:'Kettlebell overhead press',r:'3 × 8 each side',c:'Ribs down, do not arch the lower back to get it up.',a:'kbpress'},
+ {n:'Band triceps pushdown',r:'3 × 15',c:'This is your arm work. Full lockout, squeeze for a beat.',a:'pushdown'},
+ {n:'Dead bug',r:'3 × 30 s',c:'Slow and controlled beats fast and sloppy.',a:'deadbug'}
+]};
+const S2={key:'S2',name:'Session 2 — pull',ex:[
+ {n:'Kettlebell deadlift',r:'3 × 8',c:'Hinge, do not squat. Hips back first, then bend the knees.',a:'kbdeadlift'},
+ {n:'Single-arm kettlebell row',r:'3 × 10 each side',c:'Free hand on a bench or chair. Pull the elbow past your ribs.',a:'onearmrow'},
+ {n:'Goblet hold march',r:'3 × 30 s',c:'Kettlebell at the chest, march. Brace the stomach like you are about to be punched.',a:'gobletmarch'},
+ {n:'Band biceps curl',r:'3 × 12',c:'Elbows still, no swinging.',a:'curl'},
+ {n:'Band pull-apart',r:'3 × 15',c:'Arms straight, pull the band apart across your chest.',a:'pullapart'}
+]};
+const S3={key:'S3',name:'Session 3 — full body',ex:[
+ {n:'Kettlebell swing',r:'4 × 10',c:'From week 4 only, once the hinge is solid. It is a hip snap, not a front raise. Stop if the lower back talks.',a:'kbswing',gate:4,alt:'Kettlebell deadlift, 4 × 10 — keep patterning the hinge until week 4.'},
+ {n:'Step-up to a low step',r:'3 × 8 each side',c:'Low step. Drive through the whole foot, control the way down.',a:'stepup'},
+ {n:'Kettlebell floor press',r:'3 × 10 each side',c:'On your back, knees bent. Upper arm touches the floor, then press.',a:'floorpress'},
+ {n:'Band lateral raise',r:'3 × 12',c:'Stand on the band. Lead with the elbows, stop at shoulder height.',a:'latraise'},
+ {n:"Farmer's carry",r:'3 × 40 s',c:'Two kettlebells, walk tall. Grip and core in one.',a:'farmer'}
+]};
+const SESSIONS={S1,S2,S3};
+const CARDIO=[
+ {n:'Stationary bike',c:'Best first choice at your bodyweight. Zero impact on the knees.',a:'bike'},
+ {n:'Incline treadmill walk',c:'Speed 4.5–5.5 km/h, raise the incline instead of the speed.',a:'walk'},
+ {n:'Elliptical',c:'Good if the gym bike seat is uncomfortable.',a:'ellip'},
+ {n:'Rowing machine',c:'Legs first, then back, then arms. Keep the back flat.',a:'row'}
+];
+
+/* Fortnight roster. d = 0..13 from the anchor Monday.
+   kid: are the boys with you that day.  sess: combined 60 min slot. */
+const ROSTER=[
+ /* WEEK 1 */
+ {d:0, dy:'Mon',wk:1,sess:{t:'06:00',w:'morning'},kid:'night', kidTxt:'Boys arrive tonight, stay until tomorrow morning'},
+ {d:1, dy:'Tue',wk:1,sess:null,              kid:'both',  kidTxt:'Boys here this morning and again from this evening'},
+ {d:2, dy:'Wed',wk:1,sess:{t:'19:30',w:'evening'},kid:'morning',kidTxt:'Boys here this morning, then they go'},
+ {d:3, dy:'Thu',wk:1,sess:null,              kid:'no',    kidTxt:'Fully clear. This is your catch-up day if you missed a session', backup:true},
+ {d:4, dy:'Fri',wk:1,sess:{t:'06:00',w:'morning'},kid:'night', kidTxt:'Boys arrive tonight for the whole weekend'},
+ {d:5, dy:'Sat',wk:1,sess:null,              kid:'yes',   kidTxt:'Boys here all day'},
+ {d:6, dy:'Sun',wk:1,sess:null,              kid:'yes',   kidTxt:'Boys here. Prep day — get them helping'},
+ /* WEEK 2 */
+ {d:7, dy:'Mon',wk:2,sess:{t:'19:30',w:'evening'},kid:'morning',kidTxt:'Boys go this morning'},
+ {d:8, dy:'Tue',wk:2,sess:null,              kid:'no',    kidTxt:'Fully clear. Catch-up day if you missed a session', backup:true},
+ {d:9, dy:'Wed',wk:2,sess:{t:'06:00',w:'morning'},kid:'night', kidTxt:'Boys arrive tonight'},
+ {d:10,dy:'Thu',wk:2,sess:null,              kid:'both',  kidTxt:'Boys here this morning and again tonight'},
+ {d:11,dy:'Fri',wk:2,sess:null,              kid:'morning',kidTxt:'Boys go this morning'},
+ {d:12,dy:'Sat',wk:2,sess:{t:'08:00',w:'morning'},kid:'no',kidTxt:'Free weekend. No rush on the session'},
+ {d:13,dy:'Sun',wk:2,sess:null,              kid:'no',    kidTxt:'Free weekend. Prep day'}
+];
+const SESSORDER=['S1','S2','S3','S1','S2','S3'];
+
+const PREP=[
+ {id:'eggs', n:'Boil 18 eggs',   s:'Cold water, bring to the boil, 9 minutes, ice bath. Fridge with shells on.'},
+ {id:'meat', n:'Oven tray of meat',s:'1.5 kg chicken thighs or beef mince. Coat in the spice blend. 200 °C for 25–30 min. Split into 6 containers.'},
+ {id:'spice',n:'Top up the spice jar',s:'4 tbsp turmeric, 2 tbsp ground ginger, 1 tbsp cayenne, 2 tbsp black pepper, 2 tbsp paprika, 1 tbsp salt. Shake.'},
+ {id:'nuts', n:'Weigh 7 nut bags', s:'30 g each. Never eat from the big bag — this is the step that quietly saves the whole week.'},
+ {id:'shop', n:'Restock the emergency list',s:'Rotisserie chicken, tinned tuna or sardines, biltong, Greek yoghurt, pre-cut veg.'},
+ {id:'kit',  n:'Lay out kit for the week',s:'Shoes, shorts, band and kettlebell where you will trip over them at 05:45.'}
+];
+
+const MOTIV=[
+ 'You do not need to feel like it. You need to start it. The feeling shows up around minute four.',
+ 'Ten minutes. That is the whole ask. You have wasted longer than that deciding whether to do it.',
+ 'Do it badly. A bad session that happened beats a perfect one that did not.',
+ 'Put the shoes on. That is the entire task right now. Nothing after that counts yet.',
+ 'Missing one is data. Missing two is a pattern. Do not let today be the second one.',
+ 'The scale is noisy and slow. The log is honest and fast. Go and tick something.',
+ 'Partial credit is real credit in this app. Do three of the five if that is what today has in it.',
+ 'Your boys are watching what you do on the hard mornings, not the easy ones.',
+ 'Future you at 120 kg is built entirely out of ordinary Tuesdays like this one.',
+ 'The hardest rep is the one that gets you off the couch. The rest are admin.',
+ 'You are not behind. You are on day one of the rest of it, again. That is allowed.',
+ 'Do not renegotiate at 05:45. The decision was made last night. Just execute it.',
+ 'Set the timer for five minutes. If you still want to stop at five, stop. You will not.',
+ 'Weigh the nuts. Every single time. That is the one that gets people.',
+ 'Eat the protein first. Everything else on the plate is negotiable, that is not.',
+ 'You already know what to do. The app is just here so you do not have to remember it.',
+ 'Boredom is the actual enemy here, not difficulty. Boring and repeated is what wins.',
+ 'One decision you do not have to make today: what you are eating. It is already decided.',
+ 'If today is a write-off, make it a small write-off. Do the ten minutes and log it honest.',
+ 'The fat on your arms goes last. That is biology, not failure. Keep going.',
+ 'Your waist is moving even on the weeks the scale sulks. Measure on Sunday and see.',
+ 'Two minutes of tidying the kitchen now saves you a takeaway on Thursday.',
+ 'Hard sessions are optional. Showing up is not. Scale the session, keep the streak.',
+ 'Nobody feels motivated at 5:45. They just got up anyway. That is the whole trick.',
+ 'Drink the psyllium before dinner. It is the cheapest appetite control you own.',
+ 'Do not chase the perfect week. Chase eleven decent days out of every fourteen.',
+ 'The session is 60 minutes. You will spend longer than that on your phone today.',
+ 'Log it even when you failed. Especially when you failed. The gaps tell you the most.',
+ 'Start with the thing you are avoiding. It is almost always smaller than it looks from here.',
+ 'Rest is programmed, not earned by guilt. On a rest day, rest properly.'
+];
+
+/* ============================ STORAGE ============================
+   Three-tier: window.storage (Claude preview) -> localStorage (phone/APK) -> memory.
+   Same code runs in all three, nothing to change when you install it.       */
+const Store=(()=>{
+  const K='next.v1'; let mem=null;
+  const hasW=()=>typeof window!=='undefined'&&window.storage&&typeof window.storage.get==='function';
+  const hasL=()=>{try{localStorage.setItem('__t','1');localStorage.removeItem('__t');return true}catch(e){return false}};
+  return {
+    async load(){
+      if(hasW()){try{const r=await window.storage.get(K);if(r&&r.value)return JSON.parse(r.value)}catch(e){}}
+      if(hasL()){try{const v=localStorage.getItem(K);if(v)return JSON.parse(v)}catch(e){}}
+      return mem;
+    },
+    async save(o){
+      mem=o; const s=JSON.stringify(o);
+      if(hasW()){try{await window.storage.set(K,s);return}catch(e){}}
+      if(hasL()){try{localStorage.setItem(K,s)}catch(e){}}
+    }
+  };
+})();
+
+let S={
+  anchor:null,          // ISO date of the Monday that starts Week 1
+  days:{},              // iso -> {meals:{}, am:0|1|2, sess:0|1|2, water:n}
+  meas:[],              // {date, kg, waist}
+  vids:[],              // {date}
+  prep:{},              // isoSunday -> {id:true}
+  notif:false,
+  motIdx:0
+};
+
+/* ============================ DATE HELPERS ============================ */
+const iso=d=>{const z=new Date(d);z.setMinutes(z.getMinutes()-z.getTimezoneOffset());return z.toISOString().slice(0,10)};
+const parse=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addD=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const today=()=>iso(new Date());
+const DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmt=s=>{const d=parse(s);return DOW[d.getDay()].slice(0,3)+' '+d.getDate()+' '+MON[d.getMonth()]};
+const fmtLong=s=>{const d=parse(s);return DOW[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]};
+
+/* Monday of the week containing d */
+function mondayOf(isoS){const d=parse(isoS);const off=(d.getDay()+6)%7;return addD(isoS,-off)}
+/* index 0..13 in the fortnight */
+function cycleIdx(isoS){
+  if(!S.anchor)return null;
+  const diff=Math.round((parse(isoS)-parse(S.anchor))/864e5);
+  return ((diff%14)+14)%14;
+}
+function dayPlan(isoS){
+  const i=cycleIdx(isoS); if(i===null)return null;
+  const r=ROSTER[i];
+  const sessIdx=ROSTER.slice(0,i+1).filter(x=>x.sess).length-1;
+  return {...r, iso:isoS, sessKey:r.sess?SESSORDER[sessIdx]:null,
+          am: [1,3,5,0].includes(parse(isoS).getDay())?'A':'B'};  // Mon/Wed/Fri/Sun -> A
+}
+/* programme week number (1-based) since the anchor */
+function progWeek(isoS){
+  if(!S.anchor)return 1;
+  return Math.floor(Math.round((parse(isoS)-parse(S.anchor))/864e5)/7)+1;
+}
+/* volume ramp from the plan */
+function ramp(isoS){
+  const w=progWeek(isoS);
+  if(w<=2) return {cardio:20, sessions:2, weights:1, label:'Weeks 1–2 — ramping in',
+    note:'Two sessions this week, cardio capped at 20 minutes, one weights block. Do not add more. This is the part people skip and then get hurt.'};
+  if(w<=4) return {cardio:25, sessions:3, weights:2, label:'Weeks 3–4 — building',
+    note:'Three sessions, cardio up to 25 minutes, weights on two of them. Kettlebell swings unlock next week.'};
+  return {cardio:30, sessions:3, weights:3, label:'Week '+w+' — full programme',
+    note:'Full load: 30 minutes cardio plus 30 minutes weights, three times over the fortnight rotation.'};
+}
+const day=k=>(S.days[k]||(S.days[k]={meals:{},am:0,sess:0,water:0}));
+
+/* ============================ UI PLUMBING ============================ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let TOAST_T;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(TOAST_T);TOAST_T=setTimeout(()=>t.classList.remove('on'),1900)}
+function buzz(ms=18){if(navigator.vibrate)try{navigator.vibrate(ms)}catch(e){}}
+async function persist(){await Store.save(S)}
+const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
+const t2m=t=>{const[h,m]=t.split(':').map(Number);return h*60+m};
+const m2t=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+function inWords(mins){
+  if(mins<0)return Math.abs(mins)<60?Math.abs(mins)+' min ago':'earlier today';
+  if(mins===0)return 'now';
+  if(mins<60)return 'in '+mins+' min';
+  const h=Math.floor(mins/60);return 'in '+h+' hr'+(h>1?'s':'');
+}
+
+function go(id){
+  $$('.screen').forEach(s=>s.classList.remove('on'));
+  $('#sc-'+id).classList.add('on');
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===id));
+  window.scrollTo(0,0); render();
+}
+
+/* ============================ NEXT UP ============================ */
+function nextUp(){
+  const k=today(), p=dayPlan(k), d=day(k), n=nowMin(), r=ramp(k);
+  const q=[];
+  q.push({id:'am',t:'05:45',n:'Morning routine '+p.am,s:(p.am==='A'?RA:RB).name.split('— ')[1],go:'train',done:d.am});
+  MEALS.forEach(m=>q.push({id:'meal:'+m.id,t:m.t,n:m.n,s:m.s,go:'meals',done:d.meals[m.id]?2:0}));
+  if(p.sess&&r.sessions>=(ROSTER.slice(0,p.d+1).filter(x=>x.sess&&x.wk===p.wk).length))
+    q.push({id:'sess',t:p.sess.t,n:'Combined session — '+SESSIONS[p.sessKey].name.split('— ')[1],
+            s:'30 min cardio then 30 min weights',go:'train',done:d.sess});
+  else if(p.sess) q.push({id:'sess',t:p.sess.t,n:'Combined session — '+SESSIONS[p.sessKey].name.split('— ')[1],
+            s:r.cardio+' min cardio then weights',go:'train',done:d.sess});
+  if(parse(k).getDay()===0){
+    const pr=S.prep[k]||{};
+    if(PREP.some(x=>!pr[x.id])) q.push({id:'prep',t:'10:00',n:'Sunday prep',s:'40 minutes now buys you the whole week',go:'sun',done:0});
+    if(!S.meas.some(m=>m.date===k)) q.push({id:'meas',t:'08:00',n:'Weigh and measure',s:'Same time, after the toilet, before eating',go:'sun',done:0});
+    if(isVidWeek(k)&&!S.vids.some(v=>v.date===k)) q.push({id:'vid',t:'08:15',n:'Progress video',s:'Same spot, same light, same shorts',go:'sun',done:0});
+  }
+  q.sort((a,b)=>t2m(a.t)-t2m(b.t));
+  const pend=q.filter(x=>x.done!==2);
+  if(!pend.length) return null;
+  const due=pend.filter(x=>t2m(x.t)<=n+15);
+  return due.length?due[due.length-1]:pend[0];
+}
+const isVidWeek=k=>{const i=cycleIdx(k);return i!==null&&i>=7};
+
+/* ============================ TODAY ============================ */
+function renderToday(){
+  const k=today(), p=dayPlan(k), d=day(k), r=ramp(k);
+  $('#hdrDate').textContent=fmtLong(k);
+  const wk=$('#hdrWk'); wk.textContent='Week '+p.wk+' · '+(p.kid==='no'?'solo':'boys');
+  wk.className='wk'+(p.kid==='no'?'':' kid');
+
+  /* next-up block */
+  const nx=nextUp(), box=$('#nextCard');
+  if(!nx){
+    box.className='next rest';
+    box.innerHTML=`<div class="lbl">DONE FOR TODAY</div><h1>Everything ticked.</h1>
+      <div class="sub">${fmtLong(k)} is a clean day.</div>
+      <div class="meta">Streak: ${streak()} days. Go and be with the boys.</div>`;
+  }else{
+    const delta=t2m(nx.t)-nowMin();
+    box.className='next';
+    box.innerHTML=`<div class="lbl">NEXT</div><h1>${nx.n}</h1>
+      <div class="sub">${nx.s}</div>
+      <div class="meta">${nx.t} &nbsp;·&nbsp; ${inWords(delta)}</div>
+      <div class="acts">
+        <button data-nx-open="${nx.go}">Open it</button>
+        <button class="ghost" data-nx-done="${nx.id}">Mark done</button>
+      </div>`;
+  }
+
+  $('#motTxt').textContent=MOTIV[S.motIdx%MOTIV.length];
+
+  /* meals strip */
+  const mc=MEALS.filter(m=>d.meals[m.id]).length;
+  $('#mStat').textContent=mc+' of '+MEALS.length;
+  $('#mBar').innerHTML=MEALS.map(m=>`<i class="${d.meals[m.id]?'f':''}"></i>`).join('');
+  const nm=MEALS.find(m=>!d.meals[m.id]);
+  $('#mNote').textContent=nm?('Next: '+nm.n+' at '+nm.t):'All meals logged.';
+
+  /* training strip */
+  const bits=[{on:d.am},...(p.sess?[{on:d.sess}]:[])];
+  const tc=bits.filter(b=>b.on===2).length, tp=bits.filter(b=>b.on===1).length;
+  $('#tStat').textContent=tc+(tp?' + '+tp+' part':'')+' of '+bits.length;
+  $('#tBar').innerHTML=bits.map(b=>`<i class="${b.on===2?'f':b.on===1?'p':''}"></i>`).join('');
+  $('#tNote').textContent=p.sess
+    ? (d.sess===2?'Session done. ':'')+'Morning routine '+p.am+' · Combined session '+p.sess.t
+    : 'Morning routine '+p.am+' only'+(p.backup?' · free day, use it to catch up if you are behind':'');
+
+  /* water */
+  $('#wStat').textContent=(d.water||0)+' of 8 glasses';
+  $('#wBar').innerHTML=Array.from({length:8},(_,i)=>`<i class="${i<(d.water||0)?'f':''}"></i>`).join('');
+
+  /* roster */
+  const mStart=mondayOf(k), base=addD(mStart, cycleIdx(k)>=7?-7:0);
+  $('#rosterBox').innerHTML=ROSTER.map((r2,i)=>{
+    const dISO=addD(base,i), pp=dayPlan(dISO), isT=dISO===k;
+    const label=pp.sess
+      ? pp.sess.t+' — '+SESSIONS[pp.sessKey].name.split('— ')[1]+' + cardio'
+      : (pp.backup?'Clear day — catch-up slot':'Morning routine '+pp.am+' only');
+    return `<div class="r${isT?' today':''}"><span class="dy">${pp.dy}${pp.wk===2?'':''}</span>
+      <span class="tr${pp.sess?'':' off'}">${label}</span>
+      <span class="kd${pp.kid==='no'?' solo':''}">${pp.kid==='no'?'solo':'boys'}</span></div>`;
+  }).join('');
+
+  $('#todayFoot').textContent=r.label+'. '+r.note;
+  $('#dotM').hidden=mc===MEALS.length;
+  $('#dotT').hidden=bits.every(b=>b.on);
+  $('#dotS').hidden=!(parse(k).getDay()===0);
+}
+function streak(){
+  let n=0,k=today();
+  for(let i=0;i<400;i++){
+    const d=S.days[k]; if(!d)break;
+    const ok=d.am>0||d.sess>0||MEALS.filter(m=>d.meals[m.id]).length>=4;
+    if(!ok)break; n++; k=addD(k,-1);
+  }
+  return n;
+}
+
+/* ============================ MEALS ============================ */
+function renderMeals(){
+  const k=today(), d=day(k), p=dayPlan(k), n=nowMin();
+  $('#mealsWk').textContent='Week '+p.wk; $('#mealsWk').className='wk'+(p.kid==='no'?'':' kid');
+  let nextI=MEALS.findIndex(m=>!d.meals[m.id]);
+  $('#mealList').innerHTML=MEALS.map((m,i)=>{
+    const on=!!d.meals[m.id], due=!on&&i===nextI&&t2m(m.t)<=n+30;
+    return `<button class="item${on?' done':''}${due?' now':''}" data-meal="${m.id}">
+      <span class="art">${ART[m.a]}</span>
+      <span class="bd"><span class="t">${m.n}</span><span class="s">${m.s}</span><span class="tm">${m.t}</span></span>
+      <span class="box">${on?TICK:''}</span></button>`;
+  }).join('');
+  const nb=$('#notifBlk');
+  nb.querySelector('h3').textContent=S.notif?'Reminders are on':'Alarms are off';
+  nb.querySelector('p').textContent=S.notif
+    ?'You will get an alert at each meal time while the app is open or in the background.'
+    :'Turn on reminders and the app will alert you at each meal time while it is running in the background.';
+  $('#notifBtn').textContent=S.notif?'Send a test reminder':'Turn on reminders';
+}
+
+/* ============================ TRAIN ============================ */
+function exHTML(e,wk){
+  const gated=e.gate&&wk<e.gate;
+  return `<div class="ex"><div class="hd"><span class="art">${ART[e.a]}</span>
+    <span><div class="nm">${e.n}</div><div class="rx">${gated?e.alt.split(' — ')[1]||e.r:e.r}</div></span></div>
+    <div class="cue">${gated?'<b style="color:var(--amber)">Not yet.</b> '+e.alt:e.c}</div></div>`;
+}
+function renderTrain(){
+  const k=today(), p=dayPlan(k), d=day(k), r=ramp(k), wk=progWeek(k);
+  $('#trainDate').textContent=fmtLong(k);
+  $('#trainWk').textContent='Week '+p.wk+' · '+(p.kid==='no'?'solo':'boys');
+  $('#trainWk').className='wk'+(p.kid==='no'?'':' kid');
+  const rt=p.am==='A'?RA:RB;
+  let h='';
+  h+=`<div class="blk ${p.kid==='no'?'':'kid'}"><h3>${p.kid==='no'?'Clear today':'Boys are with you'}</h3><p>${p.kidTxt}.</p></div>`;
+  h+=`<div class="sec first">10 minutes, every day — ${rt.name.split('— ')[1]}</div>`;
+  h+=rt.ex.map(e=>exHTML(e,wk)).join('');
+  h+=`<div style="display:flex;gap:8px;padding:14px 16px">
+      <button class="btn sec2" style="margin:0;flex:1;padding:13px;font-size:14px" data-mark="am:1">Did part of it</button>
+      <button class="btn" style="margin:0;flex:1;padding:13px;font-size:14px" data-mark="am:2">${d.am===2?'Done ✓':'Mark done'}</button></div>`;
+  h+=`<button class="btn sec2" data-timer="600|Morning routine ${p.am}">Start 10 minute timer</button>`;
+
+  if(p.sess){
+    const ss=SESSIONS[p.sessKey];
+    h+=`<div class="sec">${p.sess.t} — combined session, 60 minutes</div>`;
+    h+=`<div class="blk amber"><h3>Part 1 — ${r.cardio} minutes cardio first</h3>
+        <p>Zone 2, conversational. Target 110–127 bpm. If you cannot speak a full sentence it is too hard. Pick one:</p></div>`;
+    h+=CARDIO.map(c=>`<div class="item"><span class="art">${ART[c.a]}</span>
+        <span class="bd"><span class="t">${c.n}</span><span class="s">${c.c}</span></span></div>`).join('');
+    h+=`<button class="btn sec2" data-timer="${r.cardio*60}|Cardio ${r.cardio} min">Start ${r.cardio} minute cardio timer</button>`;
+    h+=`<div class="sec">Part 2 — 30 minutes weights · ${ss.name.split('— ')[1]}</div>`;
+    h+=`<div class="blk"><p>Rest 60–90 seconds between sets. Add weight only when you finish every set at the top of the rep range with clean form.</p></div>`;
+    h+=ss.ex.map(e=>exHTML(e,wk)).join('');
+    h+=`<div style="display:flex;gap:8px;padding:14px 16px">
+        <button class="btn sec2" style="margin:0;flex:1;padding:13px;font-size:14px" data-mark="sess:1">Did part of it</button>
+        <button class="btn" style="margin:0;flex:1;padding:13px;font-size:14px" data-mark="sess:2">${d.sess===2?'Done ✓':'Mark done'}</button></div>`;
+    h+=`<button class="btn sec2" data-timer="1800|Weights 30 min">Start 30 minute weights timer</button>`;
+  }else{
+    h+=`<div class="sec">No session scheduled today</div>`;
+    h+=`<div class="blk ${p.backup?'amber':''}"><h3>${p.backup?'This is your catch-up day':'Recovery day'}</h3>
+      <p>${p.backup?'Nothing is booked and nobody needs you. If you missed a session this week, do it now. If you did not, take a walk and leave it.'
+      :'Morning routine only. A walk with the boys counts for plenty. Resting properly is part of the programme, not a failure of it.'}</p></div>`;
+  }
+  h+=`<div class="blk warn"><h3>Stop rules</h3><p>No running or jogging until you are under about 120 kg. No jumping, no sit-ups, no Russian twists. Any sharp lower-back pain: stop the set, do not finish it.</p></div>`;
+  h+=`<div class="foot">${r.label}. ${r.note}</div>`;
+  $('#trainBody').innerHTML=h;
+}
+
+/* ============================ LOG ============================ */
+function renderLog(){
+  const k=today(); $('#logWk').textContent='Week '+dayPlan(k).wk;
+  $('#stStreak').textContent=streak();
+  $('#stSess').textContent=Object.values(S.days).filter(d=>d.sess===2).length;
+  let hit=0,tot=0;
+  for(let i=0;i<14;i++){const dd=S.days[addD(k,-i)];if(dd){tot+=MEALS.length;hit+=MEALS.filter(m=>dd.meals[m.id]).length}}
+  $('#stAdh').textContent=tot?Math.round(hit/tot*100)+'%':'—';
+
+  const end=addD(mondayOf(k),6); let cells='';
+  for(let i=55;i>=0;i--){
+    const dISO=addD(end,-i), dd=S.days[dISO], num=parse(dISO).getDate();
+    let cls='m';
+    if(dISO>k)cls='fu';
+    else if(dd){
+      const mm=MEALS.filter(m=>dd.meals[m.id]).length, tr=dd.am===2&&(dayPlan(dISO).sess?dd.sess===2:true);
+      cls=(mm>=6&&tr)?'f':(mm>=3||dd.am>0||dd.sess>0)?'p':'m';
+    }
+    cells+=`<div class="${cls}" title="${dISO}">${num}</div>`;
+  }
+  $('#histGrid').innerHTML=cells;
+
+  $('#measList').innerHTML=S.meas.length?S.meas.slice().reverse().map((m,i,ar)=>{
+    const prev=ar[i+1], dk=prev?(m.kg-prev.kg):null;
+    const cls=dk===null?'fl':dk<-0.05?'dn':dk>0.05?'up':'fl';
+    return `<div class="mrow"><span class="dt">${fmt(m.date)}</span>
+      <span class="v1">${m.kg} kg</span>
+      <span style="color:var(--slate2);font-size:13.5px">${m.waist?m.waist+' cm waist':''}</span>
+      <span class="dl ${cls}">${dk===null?'first':(dk>0?'+':'')+dk.toFixed(1)+' kg'}</span></div>`;
+  }).join(''):'<div class="empty">No measurements yet. Weigh in on Sunday morning, after the toilet and before eating.</div>';
+
+  $('#vidList').innerHTML=S.vids.length?S.vids.slice().reverse().map(v=>
+    `<div class="mrow"><span class="dt">${fmt(v.date)}</span><span class="v1">Captured</span>
+     <span class="dl fl">every 2nd Sunday</span></div>`).join('')
+    :'<div class="empty">No videos yet. Every second Sunday, front and back, same spot and light.</div>';
+}
+
+/* ============================ SUNDAY ============================ */
+function renderSunday(){
+  const k=today(), isSun=parse(k).getDay()===0;
+  const sk=isSun?k:addD(mondayOf(k),6);
+  const pr=S.prep[sk]||{};
+  $('#sunWk').textContent='Week '+dayPlan(sk).wk;
+  const last=S.meas[S.meas.length-1], done=S.meas.some(m=>m.date===sk);
+  let h='';
+  if(!isSun) h+=`<div class="blk"><h3>Not Sunday yet</h3><p>This is ${fmtLong(sk)}'s list. You can tick things early if you get ahead.</p></div>`;
+  const cur=dayPlan(today());
+  h+=`<div class="blk ${cur.kid==='no'?'':'kid'}"><h3>Rotation check</h3>
+     <p>The app thinks today is <b>week ${cur.wk}</b> and the boys are <b>${cur.kid==='no'?'not with you':'with you'}</b>. If that is wrong, flip it once and it stays right.</p>
+     <button class="btn sec2" style="width:100%;margin:12px 0 0;padding:12px;font-size:14px" id="flipCycle">Flip to week ${cur.wk===1?2:1}</button></div>`;
+  h+=`<div class="sec first">Prep — about 40 minutes</div>`;
+  h+=PREP.map(x=>`<button class="item${pr[x.id]?' done':''}" data-prep="${sk}|${x.id}">
+      <span class="art">${ART.prep}</span>
+      <span class="bd"><span class="t">${x.n}</span><span class="s">${x.s}</span></span>
+      <span class="box">${pr[x.id]?TICK:''}</span></button>`).join('');
+  h+=`<div class="sec">Weigh and measure</div>`;
+  h+=`<div class="blk"><h3>Same conditions every week</h3><p>Sunday morning, after the toilet, before eating or drinking. Waist at the navel, tape snug but not squeezing, breathe out normally.${last?' Last time: '+last.kg+' kg'+(last.waist?', '+last.waist+' cm':'')+' on '+fmt(last.date)+'.':''}</p></div>`;
+  h+=`<div class="fld"><label>Weight</label><input type="number" inputmode="decimal" step="0.1" id="inKg" placeholder="${last?last.kg:'150.0'}"><span class="u">kg</span></div>`;
+  h+=`<div class="fld"><label>Waist at navel</label><input type="number" inputmode="decimal" step="0.5" id="inWaist" placeholder="${last&&last.waist?last.waist:'—'}"><span class="u">cm</span></div>`;
+  h+=`<button class="btn" id="saveMeas">${done?'Update this week':'Save this week'}</button>`;
+  h+=`<div class="sec">Progress video — every second Sunday</div>`;
+  const vidDue=isVidWeek(sk), vdone=S.vids.some(v=>v.date===sk);
+  h+=`<div class="blk ${vidDue&&!vdone?'amber':''}"><h3>${vidDue?(vdone?'Captured this fortnight':'Due today'):'Not this week'}</h3>
+     <p>${vidDue?'Front on, then turn slowly. Same spot, same light, same shorts, arms out. Ten seconds is plenty. The video saves to your phone, not into the app.':'Next one is '+fmt(addD(sk,7))+'.'}</p></div>`;
+  h+=`<div class="item"><span class="art">${ART.video}</span><span class="bd"><span class="t">Record and save</span><span class="s">Opens your camera, then saves the clip to your downloads.</span></span></div>`;
+  h+=`<input type="file" accept="video/*" capture="environment" id="vidIn" hidden>`;
+  h+=`<button class="btn${vidDue&&!vdone?'':' sec2'}" id="vidBtn">${vdone?'Record another':'Record progress video'}</button>`;
+  h+=`<div class="foot">Photos and video are the measurement that keeps working when the scale stalls in months 2 to 4. Take them even on the weeks you do not want to.</div>`;
+  $('#sunBody').innerHTML=h;
+}
+
+function render(){
+  if($('#sc-today').classList.contains('on'))renderToday();
+  if($('#sc-meals').classList.contains('on'))renderMeals();
+  if($('#sc-train').classList.contains('on'))renderTrain();
+  if($('#sc-log').classList.contains('on'))renderLog();
+  if($('#sc-sun').classList.contains('on'))renderSunday();
+}
+
+/* ============================ TIMER ============================ */
+let TM={left:0,total:0,run:false,int:null,nm:''};
+function openTimer(sec,nm){TM={left:sec,total:sec,run:false,int:null,nm};$('#tmrNm').textContent=nm;$('#tmr').classList.add('on');paintTimer()}
+function paintTimer(){
+  const m=Math.floor(TM.left/60),s=TM.left%60;
+  $('#tmrCd').textContent=m+':'+String(s).padStart(2,'0');
+  $('#tmrGo').textContent=TM.run?'Pause':(TM.left===TM.total?'Start':'Resume');
+  $('#tmrSt').textContent=TM.left===0?'Done. Go and log it.':(TM.run?'Running':'Paused');
+}
+function tick(){
+  TM.left--; if(TM.left<=0){TM.left=0;clearInterval(TM.int);TM.run=false;buzz([120,70,120]);
+    try{if(S.notif&&Notification.permission==='granted')new Notification('NEXT',{body:TM.nm+' finished.'})}catch(e){}}
+  paintTimer();
+}
+$('#tmrGo').onclick=()=>{
+  if(TM.left===0){TM.left=TM.total}
+  TM.run=!TM.run; clearInterval(TM.int);
+  if(TM.run)TM.int=setInterval(tick,1000);
+  buzz(); paintTimer();
+};
+$('#tmrReset').onclick=()=>{clearInterval(TM.int);TM.run=false;TM.left=TM.total;paintTimer()};
+$('#tmrX').onclick=()=>{clearInterval(TM.int);TM.run=false;$('#tmr').classList.remove('on')};
+
+/* ============================ NOTIFICATIONS ============================ */
+let NT=[];
+function scheduleNotifs(){
+  NT.forEach(clearTimeout); NT=[];
+  if(!S.notif||typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  const k=today(), d=day(k), p=dayPlan(k), n=nowMin();
+  const items=MEALS.filter(m=>!d.meals[m.id]).map(m=>({t:m.t,b:m.n+' — '+m.s.split('.')[0]+'.'}));
+  items.push({t:'05:45',b:'Morning routine '+p.am+'. Ten minutes. Start badly if you have to.'});
+  if(p.sess&&d.sess!==2)items.push({t:t2m(p.sess.t)-30>=0?m2t(t2m(p.sess.t)-30):p.sess.t,b:'Session in 30 minutes. Kit is already out.'});
+  if(parse(k).getDay()===0)items.push({t:'08:00',b:'Sunday: weigh, measure, then prep.'});
+  items.forEach(it=>{
+    const delta=(t2m(it.t)-n)*60000;
+    if(delta>0&&delta<86400000)NT.push(setTimeout(()=>{
+      try{new Notification('NEXT',{body:it.b,tag:it.t,silent:false})}catch(e){}
+      buzz([60,40,60]);
+    },delta));
+  });
+}
+$('#notifBtn').onclick=async()=>{
+  if(typeof Notification==='undefined'){toast('This browser has no notifications. Use the calendar file.');return}
+  if(S.notif&&Notification.permission==='granted'){
+    new Notification('NEXT',{body:'Reminders are working. This is what they will look like.'});
+    toast('Test sent');return;
+  }
+  const p=await Notification.requestPermission();
+  if(p==='granted'){S.notif=true;await persist();scheduleNotifs();render();toast('Reminders on')}
+  else toast('Blocked. Allow notifications in your browser settings.');
+};
+
+/* ============================ CALENDAR EXPORT ============================ */
+function dl(name,blob){
+  const u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),4000);
+}
+function pad(n){return String(n).padStart(2,'0')}
+$('#icsBtn').onclick=()=>{
+  const start=S.anchor||today();
+  let L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//NEXT//EN','CALSCALE:GREGORIAN'];
+  const ev=(uid,dt,dur,sum,desc,rule)=>{
+    const d=parse(dt),[hh,mm]=dur.t.split(':');
+    const s=`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${hh}${mm}00`;
+    const e2=new Date(d);e2.setHours(+hh,+mm+dur.len);
+    const e=`${e2.getFullYear()}${pad(e2.getMonth()+1)}${pad(e2.getDate())}T${pad(e2.getHours())}${pad(e2.getMinutes())}00`;
+    L.push('BEGIN:VEVENT','UID:'+uid+'@next','DTSTART:'+s,'DTEND:'+e,'SUMMARY:'+sum,
+      'DESCRIPTION:'+desc.replace(/,/g,'\\,'),rule,
+      'BEGIN:VALARM','TRIGGER:-PT0M','ACTION:DISPLAY','DESCRIPTION:'+sum,'END:VALARM','END:VEVENT');
+  };
+  MEALS.forEach((m,i)=>ev('meal'+i,start,{t:m.t,len:15},m.n,m.s,'RRULE:FREQ=DAILY'));
+  ev('am',start,{t:'05:45',len:10},'Morning routine','Ten minutes. Routine A on Mon Wed Fri Sun, B on Tue Thu Sat.','RRULE:FREQ=DAILY');
+  ROSTER.filter(r=>r.sess).forEach((r,i)=>{
+    ev('sess'+i,addD(start,r.d),{t:r.sess.t,len:60},'Training — 30 min cardio + 30 min weights',
+      'Combined session. '+(r.kid==='no'?'Boys not with you.':'Check the handover time.'),'RRULE:FREQ=WEEKLY;INTERVAL=2');
+  });
+  ev('sun',addD(start,6),{t:'08:00',len:60},'Sunday: weigh, measure, prep','Weight and waist first, then the 40 minute prep.','RRULE:FREQ=WEEKLY');
+  ev('vid',addD(start,13),{t:'08:15',len:10},'Progress video','Same spot, same light, same shorts.','RRULE:FREQ=WEEKLY;INTERVAL=2');
+  L.push('END:VCALENDAR');
+  dl('next-schedule.ics',new Blob([L.join('\r\n')],{type:'text/calendar'}));
+  toast('Open the file to add it to your calendar');
+};
+
+/* ============================ EVENT DELEGATION ============================ */
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('button,[data-prep],[data-meal]'); if(!b)return;
+
+  if(b.dataset.go){go(b.dataset.go);return}
+
+  if(b.dataset.nxOpen){go(b.dataset.nxOpen);return}
+  if(b.dataset.nxDone){
+    const id=b.dataset.nxDone, k=today(), d=day(k);
+    if(id==='am')d.am=2;
+    else if(id==='sess')d.sess=2;
+    else if(id.startsWith('meal:'))d.meals[id.slice(5)]=true;
+    else {go(id==='prep'?'sun':id==='meas'?'sun':'sun');return}
+    buzz();await persist();render();toast('Logged');return;
+  }
+  if(b.dataset.meal!==undefined){
+    const d=day(today()); const id=b.dataset.meal;
+    d.meals[id]?delete d.meals[id]:d.meals[id]=true;
+    buzz();await persist();renderMeals();scheduleNotifs();return;
+  }
+  if(b.dataset.mark){
+    const[f,v]=b.dataset.mark.split(':'), d=day(today());
+    d[f]=(d[f]===+v)?0:+v; buzz();await persist();renderTrain();
+    toast(d[f]===2?'Done':d[f]===1?'Partial logged — still counts':'Cleared');return;
+  }
+  if(b.dataset.timer){const[s,n]=b.dataset.timer.split('|');openTimer(+s,n);return}
+  if(b.dataset.prep){
+    const[sk,id]=b.dataset.prep.split('|'); const pr=S.prep[sk]||(S.prep[sk]={});
+    pr[id]?delete pr[id]:pr[id]=true; buzz();await persist();renderSunday();return;
+  }
+  if(b.id==='wPlus'){const d=day(today());d.water=Math.min(12,(d.water||0)+1);buzz();await persist();renderToday();return}
+  if(b.id==='wMinus'){const d=day(today());d.water=Math.max(0,(d.water||0)-1);buzz();await persist();renderToday();return}
+  if(b.id==='motNew'){S.motOff=(S.motOff||0)+1;S.motIdx=(S.motIdx+1)%MOTIV.length;await persist();$('#motTxt').textContent=MOTIV[S.motIdx];return}
+  if(b.id==='flipCycle'){S.anchor=addD(S.anchor,7);await persist();render();toast('Rotation flipped — check the roster on Today');return}
+
+  if(b.id==='saveMeas'){
+    const kg=parseFloat($('#inKg').value), w=parseFloat($('#inWaist').value);
+    if(!kg||kg<40||kg>400){toast('Enter a weight in kg');return}
+    const k=today(), sk=parse(k).getDay()===0?k:addD(mondayOf(k),6);
+    const ex=S.meas.findIndex(m=>m.date===sk);
+    const rec={date:sk,kg:Math.round(kg*10)/10,waist:w?Math.round(w*2)/2:null};
+    if(ex>=0)S.meas[ex]=rec;else S.meas.push(rec);
+    S.meas.sort((a,b2)=>a.date<b2.date?-1:1);
+    buzz();await persist();renderSunday();toast('Saved');return;
+  }
+  if(b.id==='vidBtn'){$('#vidIn').click();return}
+  if(b.id==='exportBtn'){
+    dl('next-export-'+today()+'.json',new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));
+    toast('Exported');return;
+  }
+});
+$('#vidIn').onchange=async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const k=today(), sk=parse(k).getDay()===0?k:addD(mondayOf(k),6);
+  if(!S.vids.some(v=>v.date===sk))S.vids.push({date:sk});
+  await persist();
+  dl('progress-'+sk+'.'+(f.name.split('.').pop()||'mp4'),f);
+  renderSunday();toast('Logged and saved to downloads');
+};
+
+/* ============================ INIT ============================ */
+(async function init(){
+  const saved=await Store.load(); if(saved)S={...S,...saved};
+  if(!S.anchor){ // start on the coming Monday
+    const dow=parse(today()).getDay();
+    S.anchor = dow===1 ? today() : addD(mondayOf(today()),7);
+  }
+  S.motOff=S.motOff||0;
+  S.motIdx=(Math.abs(Math.round((parse(today())-parse(S.anchor))/864e5))+S.motOff)%MOTIV.length;
+  await persist();
+  go('today');
+  scheduleNotifs();
+  setInterval(()=>{if($('#sc-today').classList.contains('on'))renderToday()},60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();scheduleNotifs()}});
+  if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
